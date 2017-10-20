@@ -1,0 +1,72 @@
+= WALAの導入
+
+環境: Mac OSX 10.12.6
+
+== 導入前の準備
+
+mavenやgradleが必要になるので導入しておく
+
+Macであればbrewを使うとよい
+
+[source, sh]
+----
+$ brew install maven
+$ brew install gradle
+----
+
+== インストール
+
+WALAのインストールにはいくつか方法がある
+
+=== GitHubからcloneする
+WALAの https://github.com/wala/WALA[レポジトリ] からcloneできる
+[source, sh]
+----
+$ git clone https://github.com/wala/WALA
+----
+
+次に準備が必要なpackageの処理を行う
+
+WALAのルートディレクトリ直下のmavenで全体のpackageについて処理できる
+
+全体で失敗する場合は個別package内のmavenによりpackage単位で処理することが可能である
+
+[source, sh]
+----
+# 全体で行う場合
+$ cd WALA
+$ mvn install
+
+# package単位で行う場合(com.ibm.wala.castの例)
+$ cd WALA/com.ibm.wala.cast
+$ mvn install
+----
+
+=== Gradleによる導入
+WALAの導入レポジトリとして https://github.com/wala/WALA-start[WALA-start] がおいてあり、これを参考にするとよい
+
+Gradleの依存パッケージを以下のように記述
+[source, txt]
+.build.gradle
+----
+dependencies {
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.shrike', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.util', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.core', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.cast', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.cast.js', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.cast.js.rhino', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.cast.java', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.cast.java.ecj', version: '1.4.3'
+    //compile group: 'com.ibm.wala', name: 'com.ibm.wala.dalvik', version: '1.4.3'
+    //compile group: 'com.ibm.wala', name: 'com.ibm.wala.scandroid', version: '1.4.3'
+}
+----
+
+そしてビルドする
+[source, sh]
+----
+$ gradle build
+----
+
+Gradle版はGitHub版に比べて、使えないパッケージ(com.ibm.wala.cast.js.nodejs等)があることに注意

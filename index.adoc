@@ -1,0 +1,28 @@
+= WALAの使い方メモ
+
+Java/JavaScriptの静的解析ツール http://wala.sourceforge.net/wiki/index.php/Main_Page[WALA] の使い方を簡単にまとめたものです
+
+== 目次
+
+=== WALAの準備
+
+* link:./introduction.{filetype}[WALAの導入]
+* link:./wala-in-intellij.{filetype}[IntelliJでWALAを使う]
+
+=== WALAの基本的な解析
+
+* link:./analysis-java-bytecode.{filetype}[Java(バイトコード)の解析]
+* link:./analysis-javascript.{filetype}[JavaScriptの解析]
+
+=== WALAの解析情報の取得
+
+* link:./info-java-callgraph.{filetype}[JavaのCallGraphに含まれる情報]
+
+== 参考ページ・ドキュメント
+
+* http://wala.sourceforge.net/wiki/index.php/Main_Page[WALA wiki]
+* http://wala.sourceforge.net/files/PLDI_WALA_Tutorial.pdf[PLDI Java Tutorial (pdf)]
+* http://wala.sourceforge.net/files/WALAJavaScriptTutorial.pdf[WALA JavaScript Tutorial (pdf)]
+* http://www.ist.aichi-pu.ac.jp/lab/yamamoto/wala
+
+

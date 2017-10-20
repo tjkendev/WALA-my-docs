@@ -1,0 +1,131 @@
+= IntelliJでWALAを使う
+
+頑張ってIntelliJでWALAを使うためのメモ
+
+環境はMac OSX 10.12.6 + IntelliJ (Ultimate)
+
+プロジェクトはGradleを使うものとする
+
+== 1. GradleからWALAを使う
+
+https://github.com/wala/WALA-start[WALA-start] を参考
+
+build.gradleに以下を追加するだけでWALAの機能を使うことができる
+
+[source, txt]
+.build.gradle
+----
+...
+
+dependencies {
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.shrike', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.util', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.core', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.cast', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.cast.js', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.cast.js.rhino', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.cast.java', version: '1.4.3'
+    compile group: 'com.ibm.wala', name: 'com.ibm.wala.cast.java.ecj', version: '1.4.3'
+    //compile group: 'com.ibm.wala', name: 'com.ibm.wala.dalvik', version: '1.4.3'
+    //compile group: 'com.ibm.wala', name: 'com.ibm.wala.scandroid', version: '1.4.3'
+}
+----
+
+== 2. GitHubからWALAをcloneして使う
+
+単純にcloneしてきただけでは使えず、自分でいくつか修正する必要がある
+
+=== 各packageが要求するライブラリをダウンロード
+
+各packageはmavenにより必要なライブラリや解析補助用のjsが入る
+
+WALAのrootディレクトリで実行すると全てのパッケージのmavenが実行されるが、
+途中でエラーで止まってしまう場合は必要なpackageのみに対して行うとよい
+[source, sh]
+----
+$ mvn install
+----
+
+もしくは、Gradleを使って必要なライブラリを取得してもよい
+
+Gradleで入れた場合はWALAをimport後に依存ライブラリとして自分で追加する
+
+1. "Project Structure -> Modules"から追加先のpackage("com.ibm.wala.core"等)を選択
+2. "Dependencies"タブを選択し、左下の"+" -> "3 Module Dependencies..."を選択
+3. 依存させるpackageを選択 (複数可)
+
+"com.ibm.wala.ide"など、Eclipseに含まれるライブラリを利用するものについてはダウンロードされないため、
+Gradleで"org.eclipse.jdt"等を入れることで対応できると考えられる (全て正しく動くかは未確認)
+
+==== Gradleで依存ライブラリを追加する一例
+
+[source, txt]
+.build.gradle
+----
+...
+
+dependencies {
+    compile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+    compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
+    compile group: 'org.smali', name: 'dexlib2', version: '2.2.1'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    compile group: 'org.mozilla', name: 'rhino', version: '1.7.7.1'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    compile group: 'net.htmlparser.jericho', name: 'jericho-html', version: '3.4'
+    compile group: 'org.json', name: 'json', version: '20170516'
+    compile group: 'org.eclipse.jdt', name: 'org.eclipse.jdt.core', version: '3.12.3'
+    compile group: 'org.apache.ant', name: 'ant', version: '1.10.1'
+    compile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.3'
+    compile group: 'com.google.android.tools', name: 'dx', version: '1.7'
+    compile group: 'nu.validator.htmlparser', name: 'htmlparser', version: '1.4'
+}
+----
+
+=== WALAプロジェクトのimport
+
+GitHubのWALAはEclipseベースなので、Eclipseプロジェクトとしてimportする
+
+1. File -> Project Structure -> Modules -> 左上の"+" -> Import Module
+2. "Import module from external model"からEclipseを選択してimport
+** testのpackageなど、自分に必要なpackageに依存しないものは追加する必要はない
+
+=== importされた各packageの情報を修正
+
+* Module SDKが"JavaSE-1.7 (or JavaSE-1.8)"になっているのを自分が使っているバージョン("1.8"等)に修正する
+* "ECLIPSE"というModuleが含まれているのを削除する
+* 各packageが必要で不足しているpackageの依存情報("com.ibm.wala.util"等)を追加
+** 正しく追加しないとビルドが通らない
+** testのpackageも追加する場合、依存するjunitライブラリが存在しないことがあるため追加する
+*** 追加する場合はModuleのscopeが"Compile"にしておく必要がある
+
+各packageを何回もリビルドしながら、エラーが出なくなるまで繰り返しながらやるとよい
+
+=== 自分のプロジェクトへのWALA packageの追加
+
+1. "Project Structure -> Modules"のページから自分のpackageを選択
+2. "Dependencies"タブを選択し、左下の"+" -> "3 Module Dependencies..."を選択
+3. 自分が必要とするWALAのpackageを追加する
+
+ただし、build.gradleを変更するなどで依存関係が変化した場合、
+[underline]#ここで追加した依存関係が消えてしまう# ので、再び自分で追加し直す必要がある
+(何かいい解決法がないものだろうか)
+
+=== その他
+
+==== バージョン不一致によるエラー
+
+ビルドしようとすると以下のようなエラーが出ることがある
+----
+Error:java: javacTask: source release 1.8 requires target release 1.8
+----
+これは、javaのバージョンとWALAのpackageをビルドする際のバージョンが一致しないために発生する
+
+自分の場合は、WALAのModuleのビルドのバージョンが1.5になってたのを1.8に修正することで修正できた
+
+1. "Cmd + Shift + A" -> "java compiler"と入力 -> "Preference"を開く
+2. "Build, Execution, Deployment" -> "Compiler" -> "Java Compiler"
+3. "Per-module bytecode version"内のModuleに対応する"Target bytecode version"を修正
+
+参考: https://stackoverflow.com/questions/29888592/errorjava-javactask-source-release-8-requires-target-release-1-8[Error:java: javacTask: source release 8 requires target release 1.8 - StackOverflow]

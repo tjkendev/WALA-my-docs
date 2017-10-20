@@ -1,0 +1,122 @@
+= Java(バイトコード)の解析
+
+WALAではJavaのバイトコードの解析ができる
+
+ここでは、ファイルの読込からCallGraphの取得までの簡単な説明を行う
+
+== 解析手順
+
+バイトコードの解析にはJavaバイトコード(jar)が必要なので、コンパイルしておく
+
+jarファイルは例えば以下のようにコンパイルできる
+[source, sh]
+----
+$ javac Test.java
+$ jar cfe Test.jar Test Test.class
+----
+ここでは、"Test.jar"を解析するとして話を進める
+
+=== ファイルの読込
+
+初めに解析対象のバイトコードを読み込む
+[source, java]
+----
+FileProvider provider = new FileProvider();
+AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(
+    "Test.jar",
+    provider.getFile("Exclusions.txt")
+);
+----
+解析ファイルのデータは _AnalysisScope_ クラスとして保持される
+
+ここで指定している"Exclusions.txt"には解析対象から省くパッケージ名を記述する
+(これである程度解析対象を減らさないと解析が長くなる)
+[source, txt]
+.Exclusions.txt (一例)
+----
+java\/awt\/.*
+java\/applet\/.*
+java\/beans\/.*
+java\/nio\/.*
+java\/rmi\/.*
+java\/security\/.*
+java\/sql\/.*
+java\/util\/.*
+java\/text\/.*
+java\/math\/.*
+java\/net\/.*
+javax\/.*
+javafx\/.*
+oracle\/.*
+apple\/.*
+com\/sun\/.*
+sun\/.*
+org\/.*
+jdk\/.*
+sunw\/.*
+java\/io\/.*
+java\/lang\/annotation\/.*
+java\/lang\/reflect\/.*
+java\/lang\/management\/.*
+java\/lang\/instrument\/.*
+java\/lang\/ref\/.*
+netscape\/.*
+----
+
+=== クラス階層の取得
+
+ファイルを読み込んだら、次にクラス階層を取得する
+[source, java]
+----
+IClassHierarchy cha = ClassHierarchyFactory.make(scope);
+----
+
+_ClassHierarchy_ クラス内には複数の _IClass_ クラスが含まれ、
+1つのクラスに1つの _IClass_ クラスのインスタンスが存在する
+
+読み込まれたクラスデータの名前は IClass#getName() で取得できる
+[source, java]
+----
+for(IClass klass : cha) {
+  System.out.println(klass.getName());
+}
+----
+
+=== 解析の設定
+
+解析には _AnalysisOptions_ クラスと _AnalysisCache_ クラスが必要となる
+
+_AnalysisOptions_ クラスは、解析を行う際の設定を記述できるクラスである
+(今回は設定の記述の説明は省略する)
+
+_AnalysisCache_ クラスは解析中のデータを保持しておくためのクラスである
+
+[source, java]
+----
+// "Test.jar"のエントリーポイント取得
+Iterable<Entrypoint> entries = Util.makeMainEntrypoints(scope, cha);
+
+// 解析の設定クラスを生成
+AnalysisOptions options = new AnalysisOptions(scope, entries);
+
+// 解析時のキャッシュ用のクラスを生成
+IRFactory<IMethod> factory = AstIRFactory.makeDefaultFactory();
+AuxiliaryCache irCache = new AuxiliaryCache(), duCache = new AuxiliaryCache();
+SSACache ssaCache = new SSACache(factory, irCache, duCache);
+SSAOptions ssaOptions = new SSAOptions();
+AnalysisCache cache = new AnalysisCache(factory, ssaOptions, ssaCache);
+----
+
+=== 解析の実行
+最後に、ここまでで用意してきたクラスらを用いて解析を実行する
+
+[source, java]
+----
+// CallGraphを構築するためのクラス
+CallGraphBuilder builder = Util.makeZeroCFABuilder(options, cache, cha, scope);
+
+// CallGraphの取得とポインタ解析結果の取得
+CallGraph callGraph = builder.makeCallGraph(options, null);
+PointerAnalysis pointerAnalysis = builder.getPointerAnalysis();
+----
+

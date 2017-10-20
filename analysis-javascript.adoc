@@ -1,0 +1,107 @@
+= JavaScriptの解析
+
+WALAではJavaだけでなくJavaScriptの解析もサポートしている
+
+ここでは、ファイルの読込からCallGraphの取得までの簡単な説明を行う
+
+== 解析手順
+
+ここでは、"test.js"を解析するとして話を進める
+
+基本的にはJavaの解析と同じ流れで行う
+
+=== ファイルの読込
+
+==== 解析対象コードの指定
+
+_Module_ クラスの配列で解析対象のファイルを列挙する
+[source, java]
+----
+File f = new FileProvider().getFile("test.js");
+Module[] modules = new Module[] {
+    JSCallGraphUtil.getPrologueFile("prologue.js"),
+    new SourceFileModule(f, "test.js", null)
+}
+----
+WALAには、JavaScriptの解析をサポートするためのコード(prologue.js等)が含まれている +
+これを読み込むためにはJSCallGraphUtil.getPrologueFile()を利用する
+
+==== 解析対象コードの読み込み
+[source, java]
+----
+JavaScriptTranslatorFactory translatorFactory = new CAstRhinoTranslatorFactory();
+JavaScriptLoaderFactory loaderFactory = new JavaScriptLoaderFactory(translatorFactory);
+AnalysisScope scope = JSCallGraphUtil.makeScope(modules, loaderFactory, JavaScriptLoader.JS);
+----
+
+=== クラス階層の取得
+
+コードを読み込んだら、次にクラス階層を取得する
+[source, java]
+----
+IClassHierarchy cha = JSCallGraphUtil.makeHierarchy(scope, loaderFactory);
+----
+
+==== WALAにおけるJavaScriptの"クラス"の扱い
+WALAでは、JavaScriptにおける関数1つを1つのクラス(_IClass_ クラスのインスタンス)とみなして解析を行っている
+
+例えば、test.jsが以下のコードであったとする
+[source, js]
+.test.js
+----
+function f() {
+  function g() {}
+}
+function h() {}
+----
+このコードからクラス階層を取得した場合
+
+* Ltest
+* Ltest/f
+* Ltest/f/g
+* Ltest/h
+
+の4つの _IClass_ クラスのインスタンスが作られる
+
+=== 解析の設定
+
+解析には _AnalysisOptions_ クラスと _AnalysisCache_ クラスが必要となる
+
+_AnalysisOptions_ クラスは、解析を行う際の設定を記述できるクラスである
+(今回は設定の記述の説明は省略する)
+
+_AnalysisCache_ クラスは解析中のデータを保持しておくためのクラスである
+
+[source, java]
+----
+// コードのエントリーポイント取得
+JavaScriptEntryPoints roots = JSCallGraphUtil.makeScriptRoots(cha);
+
+// 解析の設定クラスを生成
+JSAnalysisOptions options = JSCallGraphUtil.makeOptions(scope, cha, roots);
+
+// 解析時のキャッシュ用クラスを生成
+IRFactory<IMethod> irFactory = AstIRFactory.makeDefaultFactory();
+AnalysisCache cache = (AnalysisCache) JSCallGraphUtil.makeCache(irFactory);
+----
+
+=== 解析の実行
+
+[source, java]
+----
+// CallGraphを構築するためのクラス
+JSCFABuilder builder = new JSZeroOrOneXCFABuilder(
+    cha,
+    options,
+    cache,
+    null,
+    null,
+    ZeroXInstanceKeys.ALLOCATIONS,
+    false
+);
+
+// CallGraphの取得とポインタ解析結果の取得
+CallGraph callGraph = builder.makeCallGraph(options, null);
+PointerAnalysis pointerAnalysis = builder.getPointerAnalysis();
+----
+

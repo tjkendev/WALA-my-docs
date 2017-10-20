@@ -1,0 +1,100 @@
+= JavaのCallGraphに含まれる情報
+
+ここではJavaを解析した際の _CallGraph_ から取得できる情報について説明する
+
+== 基本的なクラスの説明
+
+=== _CGNode_ クラス: CallGraphのnode情報
+
+_CallGraph_ において、1つのメソッドは1つの _CGNode_ クラスのインスタンスとして表現される
+
+このとき、1つのメソッドで異なるcontextを持つものは別々の _CGNode_ として表現される
+
+_CallGraph_ に含まれる全ての _CGNode_ は _CallGraph#iterator()_ により取得できる
+[source, java]
+----
+CallGraph callGraph = builder.makeCallGraph(options, null);
+for(CGNode node : callGraph) {
+  System.out.println(node.iindex);       // nodeのid
+  System.out.println(node.getMethod());  // CGNodeに紐づくメソッド情報
+  System.out.println(node.getContext()); // CGNodeに紐づくcontext情報
+}
+----
+
+=== _IR_ クラス: メソッドの中間表現情報
+
+1つの _CGNode_ インスタンスには１つの _IR_ インスタンスが紐づいている
+
+_IR_ クラスには、コードの中間表現(Intermediate Representation)の情報が含まれる
+
+このクラスに含まれている情報として以下のようなものがある
+
+* メソッドに含まれる中間表現の命令情報:
+** _SSAInstruction_ クラスの配列で表現される(この派生クラスは命令の種類ごとに異なる)
+** _IR#getInstructions()_ で取得できる
+* 中間表現中の変数名や定数の情報:
+** _SymbolTable_ クラスで表現される
+** _IR#getSymbolTable()_ で取得できる
+[source, java]
+----
+IR ir = node.getIR();
+SSAInstruction[] insts = ir.getInstructions();
+SymbolTable symbolTable = ir.getSymbolTable();
+for(SSAInstruction inst : insts) {
+  System.out.println(inst.iindex); // 中間表現命令のid
+  // SSA変数名や定数等を正しく表示する場合は
+  // SSAInstruction#toString()にSymbolTableを渡す
+  System.out.println(inst != null ? inst.toString(symbolTable) : null);
+}
+----
+
+== WALAにおける中間表現
+
+=== 中間表現中の変数
+
+中間表現中では、基本的にSSA(静的単一代入)形式で表現される
+
+SSAで表現できないもの(フィールド等)については、SSA形式に変換されずそのままの形で表現されている
+
+==== ローカル変数(Local Variable)
+
+ローカル変数はSSA形式で表現でき、中間表現中では"v(番号)"という形で表現されている
+
+この番号(WALAではValue Numberという)は命令のidと同じ扱いであり、
+_IR#getInstructions()_ において変数のほうが多くなり命令が含まれないValue Numberが存在することもある +
+(配列の位置は命令のidと対応しており、命令のないidのSSAInstructionはnullになっている)
+
+==== フィールド代入・参照
+
+フィールド代入・参照は、[underline]#どのインスタンス# の [underline]#どのフィールド(名)# という形で表現される
+
+この表現には _SSAInstruction_ の派生クラス _SSAPutInstruction_ クラス または _SSAGetInstruction_ クラスとして表現される
+
+==== 変数の中間表現の例
+
+[source, java]
+.解析対象プログラム: VariableSample.java
+----
+class VariableSample() {
+  public int foo = 10;
+
+  // (v1は"this"を表現)
+  public void hoge() {
+    // inst: v4 = getstatic < Application, Ljava/lang/System, out, <Application,Ljava/io/PrintStream> >
+    // inst: invokevirtual < Application, Ljava/io/PrintStream, println(I)V > v4,v3:#27 @7 exception:v5
+    int bar = 27; // => barは"v3"
+    System.out.println(bar);
+
+    // inst: putfield v1.< Application, LVariableSample, foo, <Primordial,I> > = v6:#25
+    foo = 25; // => "v1.foo"
+
+    // inst: v7 = getstatic < Application, Ljava/lang/System, out, <Application,Ljava/io/PrintStream> >
+    // inst: v8 = getfield < Application, LVariableSample, foo, <Primordial,I> > v1
+    // inst: invokevirtual < Application, Ljava/io/PrintStream, println(I)V > v7,v8 @23 exception:v9
+    System.out.println(foo);
+
+    // inst: return
+  }
+  public static void main(String[] args) { new VariableSample().hoge(); }
+}
+----
