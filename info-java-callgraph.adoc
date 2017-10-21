@@ -6,7 +6,7 @@
 
 === _CGNode_ クラス: CallGraphのnode情報
 
-_CallGraph_ において、1つのメソッドは1つの _CGNode_ クラスのインスタンスとして表現される
+_CallGraph_ において、1つのメソッドは1つの _CGNode_ として表現される
 
 このとき、1つのメソッドで異なるcontextを持つものは別々の _CGNode_ として表現される
 
@@ -16,57 +16,108 @@ _CallGraph_ に含まれる全ての _CGNode_ は _CallGraph#iterator()_ によ�
 CallGraph callGraph = builder.makeCallGraph(options, null);
 for(CGNode node : callGraph) {
   System.out.println(node.iindex);       // nodeのid
-  System.out.println(node.getMethod());  // CGNodeに紐づくメソッド情報
-  System.out.println(node.getContext()); // CGNodeに紐づくcontext情報
+  System.out.println(node.getMethod());  // CGNodeに紐づくメソッド情報(IMethodクラス)
+  System.out.println(node.getContext()); // CGNodeに紐づくcontext情報(Contextクラス)
 }
 ----
 
 === _IR_ クラス: メソッドの中間表現情報
 
-1つの _CGNode_ インスタンスには１つの _IR_ インスタンスが紐づいている
+1つの _CGNode_ には１つの _IR_ が紐づいている
 
-_IR_ クラスには、コードの中間表現(Intermediate Representation)の情報が含まれる
+_IR_ クラスはコードの中間表現(Intermediate Representation)の情報を含んでいる
 
-このクラスに含まれている情報として以下のようなものがある
-
-* メソッドに含まれる中間表現の命令情報:
-** _SSAInstruction_ クラスの配列で表現される(この派生クラスは命令の種類ごとに異なる)
-** _IR#getInstructions()_ で取得できる
-* 中間表現中の変数名や定数の情報:
-** _SymbolTable_ クラスで表現される
-** _IR#getSymbolTable()_ で取得できる
 [source, java]
 ----
 IR ir = node.getIR();
-SSAInstruction[] insts = ir.getInstructions();
+SSAInstruction[] insts = ir.getInstructions(); // 中間表現命令のリスト
+SymbolTable symbolTable = ir.getSymbolTable(); // 変数や定数の情報
+SSACFG cfg = ir.getControlFlowGraph();         // 制御フローの情報
+----
+
+=== _SSAInstruction_ クラス: 中間表現の命令1単位の情報
+
+1つの中間表現命令は _SSAInstruction_ 1つで表現される
+
+命令には様々な種類があり、それぞれ _SSAInstruction_ の派生クラスで表現される
+
+=== _SymbolTable_ クラス: 変数や定数等の情報
+
+中間表現における変数や定数等の情報は _SymbolTable_ で表現される
+
+中間表現命令を正しく文字列として出力するためには _SSAInstruction#toString()_ に _SymbolTable_ を渡す必要がある
+
+[source, java]
+----
+IR ir = node.getIR();
 SymbolTable symbolTable = ir.getSymbolTable();
-for(SSAInstruction inst : insts) {
+for(SSAInstruction inst : ir.getInstructions() {
   System.out.println(inst.iindex); // 中間表現命令のid
-  // SSA変数名や定数等を正しく表示する場合は
-  // SSAInstruction#toString()にSymbolTableを渡す
+  // 中間表現命令の表示
   System.out.println(inst != null ? inst.toString(symbolTable) : null);
+}
+----
+
+=== _ISSABasicBlock_ インタフェース: 中間表現における基本ブロック1単位の情報
+
+メソッド内の中間表現命令は基本ブロック単位で分けられており、 _ISSABasicBlock_ で表現される
+
+このインタフェースには、どの範囲の中間表現命令がこの基本ブロックに含まれるかの情報が含まれる
+
+[source, java]
+----
+IR ir = node.getIR();
+// IR#getBlocks()で全ての基本ブロックが取得できる
+for(ISSABasicBlock bblock : Iterator2Iterable.make(ir.getBlocks())) {
+  System.out.printf("basic block %d (%d - %d)\n",
+      bblock.getNumber(),                // 基本ブロックのid
+      bblock.getFirstInstructionIndex(), // 始めの命令id
+      bblock.getLastInstructionIndex()   // 最後の命令id
+      );
+}
+----
+
+ここで利用している _Iterator2Iterable.make()_ は _Iterator_ オブジェクトを _Iterable_ オブジェクトに変換でき、
+foreachが簡単にできるWALAの補助メソッドである
+
+=== _SSACFG_ クラス: 制御フローの情報
+
+制御フロー情報は _SSACFG_ で表現されている
+
+基本ブロック間の関係が含まれており _SSACFG#getSuccNodes()_ 等で取得できる
+
+[source, java]
+----
+IR ir = node.getIR();
+// IRに紐づく制御フロー情報
+SSACFG cfg = ir.getControlFlowGraph();
+for(ISSABasicBlock bblock : Iterator2Iterable.make(ir.getBlocks())) {
+  for(ISSABasicBlock sblock : Iterator2Iterable.make(cfg.getSuccNodes(bblock))) {
+    // 基本ブロック間の関係を基本ブロックidで取得
+    System.out.printf("BasicBlock %s -> %s\n", bblock.getNumber(), sblock.getNumber());
+  }
 }
 ----
 
 == WALAにおける中間表現
 
-=== 中間表現中の変数
+=== 中間表現の変数
 
 中間表現中では、基本的にSSA(静的単一代入)形式で表現される
 
-SSAで表現できないもの(フィールド等)については、SSA形式に変換されずそのままの形で表現されている
+SSAで表現できないもの(フィールド等)については、SSA形式に変換されずそのままの形で表現される
 
-==== ローカル変数(Local Variable)
+==== ローカル変数
 
 ローカル変数はSSA形式で表現でき、中間表現中では"v(番号)"という形で表現されている
 
-この番号(WALAではValue Numberという)は命令のidと同じ扱いであり、
-_IR#getInstructions()_ において変数のほうが多くなり命令が含まれないValue Numberが存在することもある +
-(配列の位置は命令のidと対応しており、命令のないidのSSAInstructionはnullになっている)
+この番号(WALAではValueNumberという)は命令のidと同じ扱いであり、
+  _IR#getInstructions()_ において変数のほうが多くなり命令が含まれないValueNumberが存在することもある +
+(配列の位置は命令のidと対応しており、命令のないidの _SSAInstruction_ は null になっている)
 
 ==== フィールド代入・参照
 
-フィールド代入・参照は、[underline]#どのインスタンス# の [underline]#どのフィールド(名)# という形で表現される
+フィールド代入・参照は、[underline]#どのオブジェクト# の [underline]#どのフィールド(名)# という形で表現される
 
 この表現には _SSAInstruction_ の派生クラス _SSAPutInstruction_ クラス または _SSAGetInstruction_ クラスとして表現される
 
@@ -78,23 +129,180 @@ _IR#getInstructions()_ において変数のほうが多くなり命令が含ま
 class VariableSample() {
   public int foo = 10;
 
-  // (v1は"this"を表現)
+  // (v1は"this")
   public void hoge() {
     // inst: v4 = getstatic < Application, Ljava/lang/System, out, <Application,Ljava/io/PrintStream> >
+    // => 静的フィールドの参照: v4 = System.out
     // inst: invokevirtual < Application, Ljava/io/PrintStream, println(I)V > v4,v3:#27 @7 exception:v5
-    int bar = 27; // => barは"v3"
+    // => メソッド呼出: v4.printf(v3)
+    int bar = 27; // => barは"v3" (定数)
     System.out.println(bar);
 
     // inst: putfield v1.< Application, LVariableSample, foo, <Primordial,I> > = v6:#25
-    foo = 25; // => "v1.foo"
+    // => フィールド代入: v1.foo = 25
+    foo = 25;
 
     // inst: v7 = getstatic < Application, Ljava/lang/System, out, <Application,Ljava/io/PrintStream> >
     // inst: v8 = getfield < Application, LVariableSample, foo, <Primordial,I> > v1
+    // => フィールド参照: v8 = v1.foo
     // inst: invokevirtual < Application, Ljava/io/PrintStream, println(I)V > v7,v8 @23 exception:v9
     System.out.println(foo);
 
     // inst: return
   }
   public static void main(String[] args) { new VariableSample().hoge(); }
+}
+----
+
+=== φ関数とπ関数
+
+SSA形式における φ関数 や https://github.com/wala/WALA/wiki/Intermediate-Representation-(IR)#pi-nodes-advanced[π関数] は _ir.iteratePhis()_ や _ir.iteratePis()_ で取得できる
+
+これらの命令にはidが割り当てられていない(idが-1になる)
+
+[source, java]
+----
+IR ir;
+SymbolTable symbolTable = ir.getSymbolTable();
+for(SSAInstruction phi : Iterator2Iterable.make(ir.iteratePhis())) {
+  System.out.printf("phi: %s\n", phi.toString(symbolTable));
+}
+for(SSAInstruction pi : Iterator2Iterable.make(ir.iteratePis())) {
+  System.out.printf("pi: %s\n", pi.toString(symbolTable));
+}
+----
+
+=== メソッドの引数
+
+メソッドに渡される引数にはValueNumberが割り当てられている
+
+割り当てられているValueNumberは _SymbolTable#getParameter()_ で取得でき、 +
+引数の数は _SymbolTable#getNumberOfParameters()_ で取得できる
+
+この中間表現における、静的でないメソッドの引数の第一引数(つまり"v1")には"this"が渡される
+
+静的メソッドは、メソッドの引数のみになる
+
+[source, java]
+----
+SymbolTable symbolTable;
+for(int i=0; i<symbolTable.getNumberOfParameters(); ++i) {
+  System.out.printf("getParameter(%d) = v%d\n", i, symbolTable.getParameter(i));
+}
+----
+
+=== 中間表現の定数
+
+プログラムの定数についても、ValueNumberの1つの値として表現されている
+
+ValueNumberが定数かどうかは _SymbolTable#isConstant()_ や _SymbolTable#isStringConstant()_ 等で判定でき、 +
+定数の値は _SymbolTable#getValue()_ や _SymbolTable#getStringValue()_ 等で取得できる
+
+[source, java]
+----
+SymbolTable symbolTable;
+// "v10"の文字列定数判定
+if(symbolTable.isStringConstant(10)) {
+  // "v10"の文字列定数取得
+  String value = symbolTable.getStringValue(10);
+}
+----
+
+=== 命令の参照・代入関係 (def-use関係)
+
+1つの命令において、参照・代入されるValueNumberの情報は
+def-use情報として保持されている
+
+ある命令において定義(def)するValueNumberは _SSAInstruction#getDef()_ で取得でき、 +
+その数は _SSAInstruction#getNumberOfDefs()_ で取得できる
+
+また、同様に参照(use)するValueNumberは _SSAInstruction#getUse()_ で取得でき、 +
+その数は _SSAInstruction#getNumberofUses()_ で取得できる
+
+[source, java]
+----
+SSAInstruction inst;
+for(int i=0; i<inst.getNumberOfDefs(); ++i) {
+  System.out.printf("getDef(%d) = v%d\n", i, inst.getDef(i));
+}
+for(int i=0; i<inst.getNumberOfUses(); ++i) {
+  System.out.printf("getUse(%d) = v%d\n", i, inst.getUse(i));
+}
+----
+
+=== 中間表現とソースコードの対応関係
+
+ある中間表現 _SSAInstruction_ がソースコードのどこに対応するかは
+_IMethod#getSourcePosition()_ を利用することで取得できる
+
+[source, java]
+----
+SSAInstruction inst;
+if(inst.iindex != -1) {
+  IMethod.SourcePosition sp = node.getMethod().getSourcePosition(inst.iindex);
+  if(sp != null) {
+    // 中間表現命令が対応する開始行を取得
+    System.out.printf("%s (FirstLine: %d)\n", inst.toString(symbolTable), sp.getFirstLine());
+  }
+}
+----
+
+== メソッド間の呼び出し関係
+
+CallGraph内の _CGNode_ は呼び出し関係で繋がっている
+
+=== 呼び出し先・呼び出し元の _CGNode_
+
+_CGNode#getSuccNodes()_ と _CGNode#getPredNodes()_ で呼び出し先・呼び出し元の _CGNode_ が取得できる
+
+[source, java]
+----
+CGNode node;
+// 呼び出し先のCGNodeを取得
+for(CGNode succNode : Iterator2Iterable.make(callGraph.getSuccNodes(node))) {
+  System.out.printf("succ nodes %s\n", succNode.getMethod());
+}
+// 呼び出し元のCGNodeを取得
+for(CGNode predNode : Iterator2Iterable.make(callGraph.getPredNodes(node))) {
+  System.out.printf("pred nodes %s\n", predNode.getMethod());
+}
+----
+
+=== メソッドを呼び出す中間表現命令
+
+_CGNode_ の呼び出しを行う中間表現命令を取得するには _CallGraph#getPossibleSites()_ を利用する
+
+このメソッドで _CallSiteReference_ インスタンスが取得できるため、
+あとは呼び出し元の _CGNode_ に含まれる _IR#getCalls()_ で取得できる
+
+_SSAAbstractInvokeInstruction_ クラスは _SSAInstruction_ の派生クラスである
+
+[source, java]
+----
+IR ir = node.getIR();
+SymbolTable symbolTable = ir.getSymbolTable();
+for(CGNode succNode : Iterator2Iterable.make(callGraph.getSuccNodes(node))) {
+  // node --> succNode となる CallSiteReference を取得
+  for(CallSiteReference callSite : Iterator2Iterable.make(callGraph.getPossibleSites(node, succNode))) {
+    // CallSiteReference に対応する呼び出し命令を取得
+    SSAAbstractInvokeInstruction[] invokes = ir.getCalls(callSite);
+    for(SSAAbstractInvokeInstruction invoke : invokes) {
+      System.out.printf("invoke: %s\n", invoke.toString(symbolTable));
+    }
+  }
+}
+----
+
+逆に中間表現命令から呼び出し先の _CGNode_ を取得するためには、
+_SSAAbstractInvokeInstruction#getCallSite()_ から _CallSiteReference_ を取得し、
+_CallGraph#getPossibleTargets()_ で取得する
+
+[source, java]
+----
+SSAAbstractInvokeInstruction invoke;
+// 呼び出し命令に対応する1つの CallSiteReference を取得
+CallSiteReference callSite = invoke.getCallSite();
+for(CGNode targetNode : callGraph.getPossibleTargets(node, callSite)) {
+  System.out.printf("target node %s\n", targetNode.getMethod());
 }
 ----
