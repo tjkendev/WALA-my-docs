@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
 <meta name="generator" content="AsciiDoc 8.6.9" />
-<title>JavaScriptの解析</title>
+<title>JavaScriptのCallGraphに含まれる情報</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
 
@@ -733,150 +733,22 @@ asciidoc.install();
 </head>
 <body class="article">
 <div id="header">
-<h1>JavaScriptの解析</h1>
+<h1>JavaScriptのCallGraphに含まれる情報</h1>
 </div>
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
-<div class="paragraph"><p>WALAではJavaだけでなくJavaScriptの解析もサポートしている</p></div>
-<div class="paragraph"><p>ここでは、ファイルの読込からCallGraphの取得までの簡単な説明を行う</p></div>
+<div class="paragraph"><p>ここではJavaScriptを解析した際の <em>CallGraph</em> から取得できる情報について説明する</p></div>
+<div class="paragraph"><p>基本的にはJavaの時と同じであるため、異なる点について説明する</p></div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_解析手順">解析手順</h2>
+<h2 id="_基本的なクラス">基本的なクラス</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>ここでは、"test.js"を解析するとして話を進める</p></div>
-<div class="paragraph"><p>基本的にはJavaの解析と同じ流れで行う</p></div>
+<div class="paragraph"><p>構造としてはJavaの時と同じである</p></div>
 <div class="sect2">
-<h3 id="_ファイルの読込">ファイルの読込</h3>
-<div class="sect3">
-<h4 id="_解析対象コードの指定">解析対象コードの指定</h4>
-<div class="paragraph"><p><em>Module</em> クラスの配列で解析対象のファイルを列挙する</p></div>
-<div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.8
-by Lorenzo Bettini
-http://www.lorenzobettini.it
-http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="color: #008080">File</span> f <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #0000FF">new</span></span> <span style="font-weight: bold"><span style="color: #000000">FileProvider</span></span><span style="color: #990000">().</span><span style="font-weight: bold"><span style="color: #000000">getFile</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"test.js"</span><span style="color: #990000">);</span>
-Module<span style="color: #990000">[]</span> modules <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #0000FF">new</span></span> Module<span style="color: #990000">[]</span> <span style="color: #FF0000">{</span>
-    JSCallGraphUtil<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">getPrologueFile</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"prologue.js"</span><span style="color: #990000">),</span>
-    <span style="font-weight: bold"><span style="color: #0000FF">new</span></span> <span style="font-weight: bold"><span style="color: #000000">SourceFileModule</span></span><span style="color: #990000">(</span>f<span style="color: #990000">,</span> <span style="color: #FF0000">"test.js"</span><span style="color: #990000">,</span> <span style="font-weight: bold"><span style="color: #0000FF">null</span></span><span style="color: #990000">)</span>
-<span style="color: #FF0000">}</span></tt></pre></div></div>
-<div class="paragraph"><p>WALAには、JavaScriptの解析をサポートするためのコード(prologue.js等)が含まれている<br />
-これらを読み込むためには <em>JSCallGraphUtil.getPrologueFile()</em> を利用する</p></div>
-<div class="admonitionblock">
-<table><tr>
-<td class="icon">
-<div class="title">Important</div>
-</td>
-<td class="content">JavaScriptを解析する際には、"prologue.js"を必ず読み込むこと<br />
-(WALAでは、"prologue.js"に含まれるFunctionを用いて関数呼び出しを展開し、解決する)</td>
-</tr></table>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_解析対象コードの読み込み">解析対象コードの読み込み</h4>
-<div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.8
-by Lorenzo Bettini
-http://www.lorenzobettini.it
-http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="color: #008080">JavaScriptTranslatorFactory</span> translatorFactory <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #0000FF">new</span></span> <span style="font-weight: bold"><span style="color: #000000">CAstRhinoTranslatorFactory</span></span><span style="color: #990000">();</span>
-<span style="color: #008080">JavaScriptLoaderFactory</span> loaderFactory <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #0000FF">new</span></span> <span style="font-weight: bold"><span style="color: #000000">JavaScriptLoaderFactory</span></span><span style="color: #990000">(</span>translatorFactory<span style="color: #990000">);</span>
-<span style="color: #008080">AnalysisScope</span> scope <span style="color: #990000">=</span> JSCallGraphUtil<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">makeScope</span></span><span style="color: #990000">(</span>modules<span style="color: #990000">,</span> loaderFactory<span style="color: #990000">,</span> JavaScriptLoader<span style="color: #990000">.</span>JS<span style="color: #990000">);</span></tt></pre></div></div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_クラス階層の取得">クラス階層の取得</h3>
-<div class="paragraph"><p>コードを読み込んだら、次にクラス階層を取得する</p></div>
-<div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.8
-by Lorenzo Bettini
-http://www.lorenzobettini.it
-http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="color: #008080">IClassHierarchy</span> cha <span style="color: #990000">=</span> JSCallGraphUtil<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">makeHierarchy</span></span><span style="color: #990000">(</span>scope<span style="color: #990000">,</span> loaderFactory<span style="color: #990000">);</span></tt></pre></div></div>
-<div class="sect3">
-<h4 id="_tips_walaにおけるjavascriptの_クラス_の扱い">TIPS: WALAにおけるJavaScriptの"クラス"の扱い</h4>
-<div class="paragraph"><p>WALAでは、JavaScriptにおける関数1つを1つのクラス(<em>IClass</em> クラスのインスタンス)とみなして解析を行っている</p></div>
-<div class="paragraph"><p>例えば、test.jsが以下のコードであったとする</p></div>
-<div class="listingblock">
-<div class="title">test.js</div>
-<div class="content"><!-- Generator: GNU source-highlight 3.1.8
-by Lorenzo Bettini
-http://www.lorenzobettini.it
-http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">function</span></span> <span style="font-weight: bold"><span style="color: #000000">f</span></span><span style="color: #990000">()</span> <span style="color: #FF0000">{</span>
-  <span style="font-weight: bold"><span style="color: #0000FF">function</span></span> <span style="font-weight: bold"><span style="color: #000000">g</span></span><span style="color: #990000">()</span> <span style="color: #FF0000">{}</span>
-<span style="color: #FF0000">}</span>
-<span style="font-weight: bold"><span style="color: #0000FF">function</span></span> <span style="font-weight: bold"><span style="color: #000000">h</span></span><span style="color: #990000">()</span> <span style="color: #FF0000">{}</span></tt></pre></div></div>
-<div class="paragraph"><p>このコードからクラス階層を取得した場合</p></div>
-<div class="ulist"><ul>
-<li>
-<p>
-Ltest
-</p>
-</li>
-<li>
-<p>
-Ltest/f
-</p>
-</li>
-<li>
-<p>
-Ltest/f/g
-</p>
-</li>
-<li>
-<p>
-Ltest/h
-</p>
-</li>
-</ul></div>
-<div class="paragraph"><p>の4つの <em>IClass</em> クラスのインスタンスが作られる</p></div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_解析の設定">解析の設定</h3>
-<div class="paragraph"><p>解析には <em>AnalysisOptions</em> クラスと <em>AnalysisCache</em> クラスが必要となる</p></div>
-<div class="paragraph"><p><em>AnalysisOptions</em> クラスは、解析を行う際の設定を記述できるクラスである
-(今回は設定の記述の説明は省略する)</p></div>
-<div class="paragraph"><p><em>AnalysisCache</em> クラスは解析中のデータを保持しておくためのクラスである</p></div>
-<div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.8
-by Lorenzo Bettini
-http://www.lorenzobettini.it
-http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="font-style: italic"><span style="color: #9A1900">// コードのエントリーポイント取得</span></span>
-<span style="color: #008080">JavaScriptEntryPoints</span> roots <span style="color: #990000">=</span> JSCallGraphUtil<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">makeScriptRoots</span></span><span style="color: #990000">(</span>cha<span style="color: #990000">);</span>
-
-<span style="font-style: italic"><span style="color: #9A1900">// 解析の設定クラスを生成</span></span>
-<span style="color: #008080">JSAnalysisOptions</span> options <span style="color: #990000">=</span> JSCallGraphUtil<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">makeOptions</span></span><span style="color: #990000">(</span>scope<span style="color: #990000">,</span> cha<span style="color: #990000">,</span> roots<span style="color: #990000">);</span>
-
-<span style="font-style: italic"><span style="color: #9A1900">// 解析時のキャッシュ用クラスを生成</span></span>
-<span style="color: #008080">IRFactory&lt;IMethod&gt;</span> irFactory <span style="color: #990000">=</span> AstIRFactory<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">makeDefaultFactory</span></span><span style="color: #990000">();</span>
-<span style="color: #008080">AnalysisCache</span> cache <span style="color: #990000">=</span> <span style="color: #990000">(</span>AnalysisCache<span style="color: #990000">)</span> JSCallGraphUtil<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">makeCache</span></span><span style="color: #990000">(</span>irFactory<span style="color: #990000">);</span></tt></pre></div></div>
-</div>
-<div class="sect2">
-<h3 id="_解析の実行">解析の実行</h3>
-<div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.8
-by Lorenzo Bettini
-http://www.lorenzobettini.it
-http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="font-style: italic"><span style="color: #9A1900">// CallGraphを構築するためのクラス</span></span>
-<span style="color: #008080">JSCFABuilder</span> builder <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #0000FF">new</span></span> <span style="font-weight: bold"><span style="color: #000000">JSZeroOrOneXCFABuilder</span></span><span style="color: #990000">(</span>
-    cha<span style="color: #990000">,</span>
-    options<span style="color: #990000">,</span>
-    cache<span style="color: #990000">,</span>
-    <span style="font-weight: bold"><span style="color: #0000FF">null</span></span><span style="color: #990000">,</span>
-    <span style="font-weight: bold"><span style="color: #0000FF">null</span></span><span style="color: #990000">,</span>
-    ZeroXInstanceKeys<span style="color: #990000">.</span>ALLOCATIONS<span style="color: #990000">,</span>
-    <span style="font-weight: bold"><span style="color: #0000FF">false</span></span>
-<span style="color: #990000">);</span>
-
-<span style="font-style: italic"><span style="color: #9A1900">// CallGraphの取得とポインタ解析結果の取得</span></span>
-<span style="color: #008080">CallGraph</span> callGraph <span style="color: #990000">=</span> builder<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">makeCallGraph</span></span><span style="color: #990000">(</span>options<span style="color: #990000">,</span> <span style="font-weight: bold"><span style="color: #0000FF">null</span></span><span style="color: #990000">);</span>
-<span style="color: #008080">PointerAnalysis</span> pointerAnalysis <span style="color: #990000">=</span> builder<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">getPointerAnalysis</span></span><span style="color: #990000">();</span></tt></pre></div></div>
+<h3 id="_em_cgnode_em_クラス_callgraphのnode情報"><em>CGNode</em> クラス: CallGraphのnode情報</h3>
+<div class="paragraph"><p>JavaScriptでは、1つの <em>CGNode</em> には1つの関数が含まれ、contextごとに区別される</p></div>
 </div>
 </div>
 </div>
@@ -884,7 +756,7 @@ http://www.gnu.org/software/src-highlite -->
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-10-23 14:46:02 JST
+Last updated 2017-10-23 14:49:51 JST
 </div>
 </div>
 </body>

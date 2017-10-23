@@ -1,0 +1,97 @@
+= JavaScriptのPointerAnalysisに含まれる情報
+
+ここではJavaScriptを解析した際の _PointerAnalysis_ から取得できる情報について説明する
+
+(ここで扱う _PointerAnalysis_ は従来の _PointerAnalysis<InstanceKey>_ である)
+
+== 基本的なクラスの説明
+
+基本的にはJavaの場合と同じであるため、異なる箇所について説明する
+
+=== _PointerKey_ クラス
+
+抽象的なポインタを表すオブジェクト
+
+オブジェクトの種類によって表現する派生クラスが異なり、
+以下のクラスで表現される
+
+==== _LocalPointerKey_ クラス
+
+ローカル変数のポインタを表す
+
+_CGNode_ と ValueNumber の情報を持つ
+
+==== _InstanceFieldKey_ クラス
+
+Objectのプロパティを表す
+
+_InstanceFieldKey.getField()_ でこのプロパティの情報、
+_InstanceFieldKey#getInstanceKey()_ でこのプロパティが属する (式 x.y の x を指す) _InstanceKey_ が取得できる
+
+==== _TransitivePrototype_ クラス
+
+TODO
+
+==== _ReturnValueKey_ クラス
+
+関数の返り値を表す
+
+_CGNode_ の情報を持つ
+
+==== _ExceptionReturnValueKey_ クラス (_ReturnValueKey_ の派生クラス)
+
+TODO
+
+==== _ObjectPropertyCatalog_ クラス
+
+あるObjectが持つプロパティ名の一覧を表す
+
+_ObjectPropertyCatalog#getObject()_ で対象とするObjectの _InstanceKey_ が取得できる
+
+例えば、プロパティ名 a, b, d を持つObjectを対象としている場合、
+この _ObjectPropertyCatalog_ が指す _InstanceKey_ は "a", "b", "d" の文字列定数を持つ
+
+==== _ReflectedField_ クラス
+
+TODO
+
+==== _AstGlobalPointerKey_ クラス
+
+大域変数を表す
+
+_AstGlobalPointerKey#getName()_ で変数名が取得できる
+
+==== _UpwardFunargPointerKey_ クラス (_AstGlobalPointerKey_ の派生クラス)
+
+レキシカルスコープ変数を表す
+
+_UpwardFunargPointerKey#getDefiningNode()_ で定義された _CGNode_ が取得できる
+
+=== _InstanceKey_ クラス
+
+抽象的なheap locationを表すオブジェクト
+
+オブジェクトの種類によって派生クラスが異なり、
+以下のクラスで表現される
+
+==== _GlobalObjectKey_ クラス
+
+大域オブジェクトglobalを表す
+
+==== _NormalAllocationInNode_ クラス
+
+通常のheap allocationを表す
+
+==== _ScopeMappingInstanceKey_ クラス
+
+TODO
+
+==== _ConstantKey_ クラス
+
+定数を表す
+
+定数は _ConstantKey#getValue()_ で取得できる
+
+===== _ConcreteTypeKey_ クラス
+
+型オブジェクト(String, Array等)を表す

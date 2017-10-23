@@ -1,0 +1,13 @@
+= JavaScriptのCallGraphに含まれる情報
+
+ここではJavaScriptを解析した際の _CallGraph_ から取得できる情報について説明する
+
+基本的にはJavaの時と同じであるため、異なる点について説明する
+
+== 基本的なクラス
+
+構造としてはJavaの時と同じである
+
+=== _CGNode_ クラス: CallGraphのnode情報
+
+JavaScriptでは、1つの _CGNode_ には1つの関数が含まれ、contextごとに区別される

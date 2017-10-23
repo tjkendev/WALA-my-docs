@@ -23,8 +23,12 @@ Module[] modules = new Module[] {
     new SourceFileModule(f, "test.js", null)
 }
 ----
+
 WALAには、JavaScriptの解析をサポートするためのコード(prologue.js等)が含まれている +
-これを読み込むためにはJSCallGraphUtil.getPrologueFile()を利用する
+これらを読み込むためには _JSCallGraphUtil.getPrologueFile()_ を利用する
+
+IMPORTANT: JavaScriptを解析する際には、"prologue.js"を必ず読み込むこと +
+(WALAでは、"prologue.js"に含まれるFunctionを用いて関数呼び出しを展開し、解決する)
 
 ==== 解析対象コードの読み込み
 [source, java]
@@ -42,7 +46,7 @@ AnalysisScope scope = JSCallGraphUtil.makeScope(modules, loaderFactory, JavaScri
 IClassHierarchy cha = JSCallGraphUtil.makeHierarchy(scope, loaderFactory);
 ----
 
-==== WALAにおけるJavaScriptの"クラス"の扱い
+==== TIPS: WALAにおけるJavaScriptの"クラス"の扱い
 WALAでは、JavaScriptにおける関数1つを1つのクラス(_IClass_ クラスのインスタンス)とみなして解析を行っている
 
 例えば、test.jsが以下のコードであったとする

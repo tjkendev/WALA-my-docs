@@ -1,0 +1,65 @@
+= JavaのPointerAnalysisに含まれる情報
+
+ここではJavaを解析した際の _PointerAnalysis_ から取得できる情報について説明する
+
+(ここで扱う _PointerAnalysis_ は従来の _PointerAnalysis<InstanceKey>_ である)
+
+参考: https://github.com/wala/WALA/wiki/Pointer-Analysis[Pointer Analysis - WALA wiki]
+
+== 基本的なクラスの説明
+
+=== _PointerKey_ クラス
+
+抽象的なポインタを表すオブジェクト
+
+オブジェクトの種類によって、表現する派生クラスが異なる
+
+==== _LocalPointerKey_ クラス
+
+ローカル変数のポインタを表す
+
+_CGNode_ と ValueNumber の情報を持つ
+
+==== _LocalPointerKeyWithFilter_ クラス (_LocalPointerKey_ の派生クラス)
+
+type filterを持つ _LocalPointerKey_
+
+==== _InstanceFieldKey_ クラス
+
+TODO
+
+==== _StaticFieldKey_ クラス
+
+静的フィールドのポインタを表す
+
+_IField_ の情報を持つ
+
+==== _ReturnValueKey_ クラス
+
+返り値のポインタを示す
+
+_CGNode_ の情報を持つ
+
+==== _ReturnValueKeyWithFilter_ クラス (_ReturnValueKey_ の派生クラス)
+
+type filterを持つ _ReturnValueKey_
+
+==== _ExceptionReturnValueKey_ クラス (_ReturnValueKey_ の派生クラス)
+
+TODO
+
+==== _ArrayContentsKey_ クラス
+
+TODO
+
+=== _InstanceKey_ クラス
+
+抽象的なheap locationを表すオブジェクト
+
+オブジェクトの種類によって、派生クラスが異なる
+
+=== _HeapGraph_ クラス: ポインタ関係のグラフ情報
+
+TODO
+
+

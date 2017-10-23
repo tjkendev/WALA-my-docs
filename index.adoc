@@ -17,6 +17,10 @@ Java/JavaScriptの静的解析ツール http://wala.sourceforge.net/wiki/index.p
 === WALAの解析情報の取得
 
 * link:./info-java-callgraph.{filetype}[JavaのCallGraphに含まれる情報]
+* link:./info-java-pointeranalysis.{filetype}[JavaのPointerAnalysisに含まれる情報]
+
+* link:./info-javascript-callgraph.{filetype}[JavaScriptのCallGraphに含まれる情報]
+* link:./info-javascript-pointeranalysis.{filetype}[JvaScriptのPointerAnalysisに含まれる情報]
 
 == 参考ページ・ドキュメント
 
