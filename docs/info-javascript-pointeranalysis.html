@@ -753,48 +753,53 @@ asciidoc.install();
 以下のクラスで表現される</p></div>
 <div class="sect3">
 <h4 id="_em_localpointerkey_em_クラス"><em>LocalPointerKey</em> クラス</h4>
-<div class="paragraph"><p>ローカル変数のポインタを表す</p></div>
-<div class="paragraph"><p><em>CGNode</em> と ValueNumber の情報を持つ</p></div>
+<div class="paragraph"><p>ローカル変数(ValueNumber)のポインタを表す</p></div>
+<div class="paragraph"><p>対応する <em>CGNode</em> と ValueNumber の情報を持つ</p></div>
 </div>
 <div class="sect3">
 <h4 id="_em_instancefieldkey_em_クラス"><em>InstanceFieldKey</em> クラス</h4>
-<div class="paragraph"><p>Objectのプロパティを表す</p></div>
+<div class="paragraph"><p>Objectのプロパティのポインタ(式 x.y のyが指すもの)を表す</p></div>
 <div class="paragraph"><p><em>InstanceFieldKey.getField()</em> でこのプロパティの情報、
-<em>InstanceFieldKey#getInstanceKey()</em> でこのプロパティが属する (式 x.y の x を指す) <em>InstanceKey</em> が取得できる</p></div>
+<em>InstanceFieldKey#getInstanceKey()</em> でこのプロパティが属するObject(式 x.y のx)の <em>InstanceKey</em> が取得できる</p></div>
 </div>
 <div class="sect3">
 <h4 id="_em_transitiveprototype_em_クラス"><em>TransitivePrototype</em> クラス</h4>
-<div class="paragraph"><p>TODO</p></div>
+<div class="paragraph"><p>オブジェクトがprototypeとして参照するオブジェクト一覧を表す</p></div>
+<div class="paragraph"><p><em>TransitivePrototype#getInstanceKey()</em> で対象とするオブジェクトの <em>InstanceKey</em> が取得できる</p></div>
 </div>
 <div class="sect3">
 <h4 id="_em_returnvaluekey_em_クラス"><em>ReturnValueKey</em> クラス</h4>
-<div class="paragraph"><p>関数の返り値を表す</p></div>
+<div class="paragraph"><p>関数がreturnで返しうる値のポインタを表す</p></div>
 <div class="paragraph"><p><em>CGNode</em> の情報を持つ</p></div>
 </div>
 <div class="sect3">
 <h4 id="_em_exceptionreturnvaluekey_em_クラス_em_returnvaluekey_em_の派生クラス"><em>ExceptionReturnValueKey</em> クラス (<em>ReturnValueKey</em> の派生クラス)</h4>
-<div class="paragraph"><p>TODO</p></div>
+<div class="paragraph"><p>関数がthrow等で返しうるエラーオブジェクト(TypeError等)のポインタを表す</p></div>
 </div>
 <div class="sect3">
 <h4 id="_em_objectpropertycatalog_em_クラス"><em>ObjectPropertyCatalog</em> クラス</h4>
 <div class="paragraph"><p>あるObjectが持つプロパティ名の一覧を表す</p></div>
-<div class="paragraph"><p><em>ObjectPropertyCatalog#getObject()</em> で対象とするObjectの <em>InstanceKey</em> が取得できる</p></div>
-<div class="paragraph"><p>例えば、プロパティ名 a, b, d を持つObjectを対象としている場合、
-この <em>ObjectPropertyCatalog</em> が指す <em>InstanceKey</em> は "a", "b", "d" の文字列定数を持つ</p></div>
+<div class="paragraph"><p><em>ObjectPropertyCatalog#getObject()</em> で一覧の対象とするObjectの <em>InstanceKey</em> が取得できる</p></div>
+<div class="paragraph"><p>例えば、プロパティ名 a, b, d を持つObject objを対象としている場合、
+この <em>ObjectPropertyCatalog</em> が指す <em>InstanceKey</em> は "a", "b", "d" の文字列定数を持ち、
+<em>getObject()</em> でobjのheap allocationを表す <em>InstanceKey</em> が取得できる</p></div>
 </div>
 <div class="sect3">
 <h4 id="_em_reflectedfield_em_クラス"><em>ReflectedField</em> クラス</h4>
-<div class="paragraph"><p>TODO</p></div>
+<div class="paragraph"><p>あるObjectをリフレクションとして参照できるオブジェクトの一覧を表す</p></div>
+<div class="paragraph"><p>例えば、Object objが obj.a = b であった場合、bというオブジェクトの <em>InstanceKey</em> がこの <em>ReflectedField</em> から参照できる</p></div>
+<div class="paragraph"><p><em>ReflectedField#getInstanceKey</em> で対象となるオブジェクトの <em>InstanceKey</em> が取得できる。</p></div>
 </div>
 <div class="sect3">
 <h4 id="_em_astglobalpointerkey_em_クラス"><em>AstGlobalPointerKey</em> クラス</h4>
-<div class="paragraph"><p>大域変数を表す</p></div>
+<div class="paragraph"><p>大域オブジェクトを表す</p></div>
 <div class="paragraph"><p><em>AstGlobalPointerKey#getName()</em> で変数名が取得できる</p></div>
 </div>
 <div class="sect3">
 <h4 id="_em_upwardfunargpointerkey_em_クラス_em_astglobalpointerkey_em_の派生クラス"><em>UpwardFunargPointerKey</em> クラス (<em>AstGlobalPointerKey</em> の派生クラス)</h4>
 <div class="paragraph"><p>レキシカルスコープ変数を表す</p></div>
-<div class="paragraph"><p><em>UpwardFunargPointerKey#getDefiningNode()</em> で定義された <em>CGNode</em> が取得できる</p></div>
+<div class="paragraph"><p><em>UpwardFunargPointerKey#getDefiningNode()</em> で定義された <em>CGNode</em> が取得できる<br />
+(しかし、ローカルクラスなのでこのメソッドにアクセスできない)</p></div>
 </div>
 </div>
 <div class="sect2">
@@ -804,7 +809,8 @@ asciidoc.install();
 以下のクラスで表現される</p></div>
 <div class="sect3">
 <h4 id="_em_globalobjectkey_em_クラス"><em>GlobalObjectKey</em> クラス</h4>
-<div class="paragraph"><p>大域オブジェクトglobalを表す</p></div>
+<div class="paragraph"><p>JavaScriptにおける大域オブジェクト global を表す</p></div>
+<div class="paragraph"><p>この <em>InstanceKey</em> は1個だけ存在する</p></div>
 </div>
 <div class="sect3">
 <h4 id="_em_normalallocationinnode_em_クラス"><em>NormalAllocationInNode</em> クラス</h4>
@@ -812,11 +818,36 @@ asciidoc.install();
 </div>
 <div class="sect3">
 <h4 id="_em_scopemappinginstancekey_em_クラス"><em>ScopeMappingInstanceKey</em> クラス</h4>
-<div class="paragraph"><p>TODO</p></div>
+<div class="paragraph"><p>クロージャ内で生成される関数の生成元(lexical parent)の情報を持つ</p></div>
+<div class="paragraph"><p>この <em>InstanceKey</em> によって別々の呼び出しで生成されるクロージャ内関数を外部から呼び出した時に
+区別することができる</p></div>
+<div class="paragraph"><p><em>ScopeMappingInstanceKey#getBase()</em> でクロージャ内で生成される関数を指す <em>InstanceKey</em> が取得でき、
+<em>ScopeMappingInstanceKey#getCreater()</em> で生成元(lexical parent)の <em>CGNode</em> が取得できる</p></div>
+<div class="listingblock">
+<div class="title">クロージャ内関数を区別する例: nested.js</div>
+<div class="content"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">function</span></span> <span style="font-weight: bold"><span style="color: #000000">create</span></span><span style="color: #990000">(</span>message<span style="color: #990000">)</span> <span style="color: #FF0000">{</span>
+  <span style="font-weight: bold"><span style="color: #0000FF">function</span></span> <span style="font-weight: bold"><span style="color: #000000">say</span></span><span style="color: #990000">()</span> <span style="color: #FF0000">{</span>
+    console<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">log</span></span><span style="color: #990000">(</span>message<span style="color: #990000">);</span>
+  <span style="color: #FF0000">}</span>
+  <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> say<span style="color: #990000">;</span>
+<span style="color: #FF0000">}</span>
+
+<span style="font-style: italic"><span style="color: #9A1900">// ２つは同じクロージャ内関数 say だが、</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">// 生成元のCGNode(この場合はcreate関数のCGNode)によって別々の関数として区別される</span></span>
+
+hello <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000000">create</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'hello!'</span><span style="color: #990000">);</span>
+<span style="font-weight: bold"><span style="color: #000000">hello</span></span><span style="color: #990000">();</span> <span style="font-style: italic"><span style="color: #9A1900">// こっちのsayは "create('hello!')" のCGNodeに紐づく</span></span>
+
+goodbye <span style="color: #990000">=</span> <span style="font-weight: bold"><span style="color: #000000">create</span></span><span style="color: #990000">(</span><span style="color: #FF0000">'goodbye!'</span><span style="color: #990000">);</span>
+<span style="font-weight: bold"><span style="color: #000000">goodbye</span></span><span style="color: #990000">();</span> <span style="font-style: italic"><span style="color: #9A1900">// こっちのsayは "create('goodbye!')" のCGNodeに紐づく</span></span></tt></pre></div></div>
 </div>
 <div class="sect3">
-<h4 id="_em_constantkey_em_クラス"><em>ConstantKey</em> クラス</h4>
-<div class="paragraph"><p>定数を表す</p></div>
+<h4 id="_em_constantkey_lt_t_gt_em_クラス"><em>ConstantKey&lt;T&gt;</em> クラス</h4>
+<div class="paragraph"><p>定数を表し、その値の型はGeneric type Tに対応する</p></div>
 <div class="paragraph"><p>定数は <em>ConstantKey#getValue()</em> で取得できる</p></div>
 <div class="sect4">
 <h5 id="_em_concretetypekey_em_クラス"><em>ConcreteTypeKey</em> クラス</h5>
@@ -830,7 +861,7 @@ asciidoc.install();
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-10-22 19:29:25 JST
+Last updated 2017-10-26 17:26:42 JST
 </div>
 </div>
 </body>

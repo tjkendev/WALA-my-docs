@@ -17,47 +17,54 @@
 
 ==== _LocalPointerKey_ クラス
 
-ローカル変数のポインタを表す
+ローカル変数(ValueNumber)のポインタを表す
 
-_CGNode_ と ValueNumber の情報を持つ
+対応する _CGNode_ と ValueNumber の情報を持つ
 
 ==== _InstanceFieldKey_ クラス
 
-Objectのプロパティを表す
+Objectのプロパティのポインタ(式 x.y のyが指すもの)を表す
 
 _InstanceFieldKey.getField()_ でこのプロパティの情報、
-_InstanceFieldKey#getInstanceKey()_ でこのプロパティが属する (式 x.y の x を指す) _InstanceKey_ が取得できる
+_InstanceFieldKey#getInstanceKey()_ でこのプロパティが属するObject(式 x.y のx)の _InstanceKey_ が取得できる
 
 ==== _TransitivePrototype_ クラス
 
-TODO
+オブジェクトがprototypeとして参照するオブジェクト一覧を表す
+
+_TransitivePrototype#getInstanceKey()_ で対象とするオブジェクトの _InstanceKey_ が取得できる
 
 ==== _ReturnValueKey_ クラス
 
-関数の返り値を表す
+関数がreturnで返しうる値のポインタを表す
 
 _CGNode_ の情報を持つ
 
 ==== _ExceptionReturnValueKey_ クラス (_ReturnValueKey_ の派生クラス)
 
-TODO
+関数がthrow等で返しうるエラーオブジェクト(TypeError等)のポインタを表す
 
 ==== _ObjectPropertyCatalog_ クラス
 
 あるObjectが持つプロパティ名の一覧を表す
 
-_ObjectPropertyCatalog#getObject()_ で対象とするObjectの _InstanceKey_ が取得できる
+_ObjectPropertyCatalog#getObject()_ で一覧の対象とするObjectの _InstanceKey_ が取得できる
 
-例えば、プロパティ名 a, b, d を持つObjectを対象としている場合、
-この _ObjectPropertyCatalog_ が指す _InstanceKey_ は "a", "b", "d" の文字列定数を持つ
+例えば、プロパティ名 a, b, d を持つObject objを対象としている場合、
+この _ObjectPropertyCatalog_ が指す _InstanceKey_ は "a", "b", "d" の文字列定数を持ち、
+_getObject()_ でobjのheap allocationを表す _InstanceKey_ が取得できる
 
 ==== _ReflectedField_ クラス
 
-TODO
+あるObjectをリフレクションとして参照できるオブジェクトの一覧を表す
+
+例えば、Object objが obj.a = b であった場合、bというオブジェクトの _InstanceKey_ がこの _ReflectedField_ から参照できる
+
+_ReflectedField#getInstanceKey_ で対象となるオブジェクトの _InstanceKey_ が取得できる。
 
 ==== _AstGlobalPointerKey_ クラス
 
-大域変数を表す
+大域オブジェクトを表す
 
 _AstGlobalPointerKey#getName()_ で変数名が取得できる
 
@@ -65,7 +72,8 @@ _AstGlobalPointerKey#getName()_ で変数名が取得できる
 
 レキシカルスコープ変数を表す
 
-_UpwardFunargPointerKey#getDefiningNode()_ で定義された _CGNode_ が取得できる
+_UpwardFunargPointerKey#getDefiningNode()_ で定義された _CGNode_ が取得できる +
+(しかし、ローカルクラスなのでこのメソッドにアクセスできない)
 
 === _InstanceKey_ クラス
 
@@ -76,7 +84,9 @@ _UpwardFunargPointerKey#getDefiningNode()_ で定義された _CGNode_ が取得
 
 ==== _GlobalObjectKey_ クラス
 
-大域オブジェクトglobalを表す
+JavaScriptにおける大域オブジェクト global を表す
+
+この _InstanceKey_ は1個だけ存在する
 
 ==== _NormalAllocationInNode_ クラス
 
@@ -84,11 +94,37 @@ _UpwardFunargPointerKey#getDefiningNode()_ で定義された _CGNode_ が取得
 
 ==== _ScopeMappingInstanceKey_ クラス
 
-TODO
+クロージャ内で生成される関数の生成元(lexical parent)の情報を持つ
 
-==== _ConstantKey_ クラス
+この _InstanceKey_ によって別々の呼び出しで生成されるクロージャ内関数を外部から呼び出した時に
+区別することができる
 
-定数を表す
+_ScopeMappingInstanceKey#getBase()_ でクロージャ内で生成される関数を指す _InstanceKey_ が取得でき、
+_ScopeMappingInstanceKey#getCreater()_ で生成元(lexical parent)の _CGNode_ が取得できる
+
+[source, js]
+.クロージャ内関数を区別する例: nested.js
+----
+function create(message) {
+  function say() {
+    console.log(message);
+  }
+  return say;
+}
+
+// ２つは同じクロージャ内関数 say だが、
+// 生成元のCGNode(この場合はcreate関数のCGNode)によって別々の関数として区別される
+
+hello = create('hello!');
+hello(); // こっちのsayは "create('hello!')" のCGNodeに紐づく
+
+goodbye = create('goodbye!');
+goodbye(); // こっちのsayは "create('goodbye!')" のCGNodeに紐づく
+----
+
+==== _ConstantKey<T>_ クラス
+
+定数を表し、その値の型はGeneric type Tに対応する
 
 定数は _ConstantKey#getValue()_ で取得できる
 
