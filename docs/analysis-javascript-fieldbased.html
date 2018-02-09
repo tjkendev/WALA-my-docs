@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.6.1">
-<title>JavaScriptのCallGraphに含まれる情報</title>
+<title>JavaScript解析拡張 (Field-based Analysis)</title>
 <style>
 /*! normalize.css v2.1.2 | MIT License | git.io/normalize */
 /* ========================================================================== HTML5 display definitions ========================================================================== */
@@ -712,37 +712,96 @@ b.conum * { color: inherit !important; }
 </head>
 <body class="article">
 <div id="header">
-<h1>JavaScriptのCallGraphに含まれる情報</h1>
+<h1>JavaScript解析拡張 (Field-based Analysis)</h1>
 </div>
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>ここではJavaScriptを解析した際の <em>CallGraph</em> から取得できる情報について説明する</p>
+<p>WALAには、解析手法の１つであるField-based Analysis <a href="#Feldthaus">[Feldthaus]</a> が実装されている。</p>
 </div>
 <div class="paragraph">
-<p>基本的にはJavaの時と同じであるため、異なる点について説明する</p>
+<p>解析クラスとして、 <em>OptimisticCallgraphBuilder</em> クラスと <em>PessimisticCallGraphBuilder</em> クラスが存在する。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-java" data-lang="java">import com.ibm.wala.cast.ir.ssa.AstIRFactory;
+import com.ibm.wala.cast.js.callgraph.fieldbased.OptimisticCallgraphBuilder;
+import com.ibm.wala.cast.js.callgraph.fieldbased.flowgraph.vertices.ObjectVertex;
+import com.ibm.wala.cast.js.ipa.callgraph.*;
+import com.ibm.wala.cast.js.loader.JavaScriptLoader;
+import com.ibm.wala.cast.js.loader.JavaScriptLoaderFactory;
+import com.ibm.wala.cast.js.translator.CAstRhinoTranslatorFactory;
+import com.ibm.wala.cast.js.translator.JavaScriptTranslatorFactory;
+import com.ibm.wala.classLoader.IMethod;
+import com.ibm.wala.classLoader.Module;
+import com.ibm.wala.classLoader.SourceFileModule;
+import com.ibm.wala.ipa.callgraph.AnalysisCache;
+import com.ibm.wala.ipa.callgraph.AnalysisScope;
+import com.ibm.wala.ipa.callgraph.CGNode;
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
+import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ssa.IRFactory;
+import com.ibm.wala.util.collections.Pair;
+import com.ibm.wala.util.io.FileProvider;
+
+import java.io.File;
+
+public class FieldBasedTest {
+  public static void main(String[] args) {
+
+    String fileName = "fieldbased-example.js";
+    try {
+      File f = new FileProvider().getFile(fileName);
+      Module[] modules = new Module[] {
+        JSCallGraphUtil.getPrologueFile("prologue.js"),
+          new SourceFileModule(f, fileName, null)
+      };
+      JavaScriptTranslatorFactory translatorFactory = new CAstRhinoTranslatorFactory();
+      JavaScriptLoaderFactory loaderFactory = new JavaScriptLoaderFactory(translatorFactory);
+      AnalysisScope scope = JSCallGraphUtil.makeScope(modules, loaderFactory, JavaScriptLoader.JS);
+      IClassHierarchy cha = JSCallGraphUtil.makeHierarchy(scope, loaderFactory);
+
+      JavaScriptEntryPoints roots = JSCallGraphUtil.makeScriptRoots(cha);
+
+      JSAnalysisOptions options = JSCallGraphUtil.makeOptions(scope, cha, roots);
+
+      IRFactory&lt;IMethod&gt; irFactory = AstIRFactory.makeDefaultFactory();
+      AnalysisCache cache = (AnalysisCache) JSCallGraphUtil.makeCache(irFactory);
+
+      // Field-based Call Graph による解析
+      OptimisticCallgraphBuilder builder = new OptimisticCallgraphBuilder(cha, options, cache, true);
+      Pair&lt;JSCallGraph, PointerAnalysis&lt;ObjectVertex&gt;&gt; result = builder.buildCallGraph(roots, null);
+
+      // Call Graph
+      JSCallGraph callGraph = result.fst;
+      // ポインタ解析結果
+      PointerAnalysis&lt;ObjectVertex&gt; pointerAnalysis = result.snd;
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+  }
+}</code></pre>
+</div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_基本的なクラス">基本的なクラス</h2>
+<h2 id="_参考文献">参考文献</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>構造としてはJavaの時と同じである</p>
-</div>
-<div class="sect2">
-<h3 id="_em_cgnode_em_クラス_callgraphのnode情報"><em>CGNode</em> クラス: CallGraphのnode情報</h3>
-<div class="paragraph">
-<p>JavaScriptでは、1つの <em>CGNode</em> には1つの関数が含まれ、contextごとに区別される</p>
-</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="Feldthaus"></a> Feldthaus, Asger, et al. "Efficient construction of approximate call graphs for JavaScript IDE services." Software Engineering (ICSE), 2013 35th International Conference on. IEEE, 2013.</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-10-23 14:49:51 JST
+Last updated 2018-02-09 14:23:41 JST
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">

@@ -22,7 +22,11 @@ Java/JavaScriptの静的解析ツール http://wala.sourceforge.net/wiki/index.p
 * link:./info-java-pointeranalysis.{filetype}[JavaのPointerAnalysisに含まれる情報]
 
 * link:./info-javascript-callgraph.{filetype}[JavaScriptのCallGraphに含まれる情報]
-* link:./info-javascript-pointeranalysis.{filetype}[JvaScriptのPointerAnalysisに含まれる情報]
+* link:./info-javascript-pointeranalysis.{filetype}[JavaScriptのPointerAnalysisに含まれる情報]
+
+=== JavaScript解析の拡張機能
+
+* link:./analysis-javascript-fieldbased.{filetype}[Field-based Analysis]
 
 == 参考ページ・ドキュメント
 

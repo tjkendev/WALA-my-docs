@@ -1,3 +1,5 @@
+:source-highlighter: coderay
+
 = JavaのCallGraphに含まれる情報
 
 ここではJavaを解析した際の _CallGraph_ から取得できる情報について説明する

@@ -1,0 +1,15 @@
+= JavaScript解析拡張 (Field-based Analysis)
+
+WALAには、解析手法の１つであるField-based Analysis <<Feldthaus>> が実装されている。
+
+解析クラスとして、 _OptimisticCallgraphBuilder_ クラスと _PessimisticCallGraphBuilder_ クラスが存在する。
+
+
+[source,java]
+----
+include::./src/java/field-based-test.java[]
+----
+
+== 参考文献
+
+- [[Feldthaus]] Feldthaus, Asger, et al. "Efficient construction of approximate call graphs for JavaScript IDE services." Software Engineering (ICSE), 2013 35th International Conference on. IEEE, 2013.

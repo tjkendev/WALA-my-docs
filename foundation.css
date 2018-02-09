@@ -1,12 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 1.5.6.1">
-<title>JavaScriptのCallGraphに含まれる情報</title>
-<style>
 /*! normalize.css v2.1.2 | MIT License | git.io/normalize */
 /* ========================================================================== HTML5 display definitions ========================================================================== */
 /** Correct `block` display not defined in IE 8/9. */
@@ -707,46 +698,3 @@ b.conum * { color: inherit !important; }
 .conum:not([data-value]):empty { display: none; }
 
 .literalblock pre, .listingblock pre { background: #eeeeee; }
-
-</style>
-</head>
-<body class="article">
-<div id="header">
-<h1>JavaScriptのCallGraphに含まれる情報</h1>
-</div>
-<div id="content">
-<div id="preamble">
-<div class="sectionbody">
-<div class="paragraph">
-<p>ここではJavaScriptを解析した際の <em>CallGraph</em> から取得できる情報について説明する</p>
-</div>
-<div class="paragraph">
-<p>基本的にはJavaの時と同じであるため、異なる点について説明する</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_基本的なクラス">基本的なクラス</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>構造としてはJavaの時と同じである</p>
-</div>
-<div class="sect2">
-<h3 id="_em_cgnode_em_クラス_callgraphのnode情報"><em>CGNode</em> クラス: CallGraphのnode情報</h3>
-<div class="paragraph">
-<p>JavaScriptでは、1つの <em>CGNode</em> には1つの関数が含まれ、contextごとに区別される</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div id="footer">
-<div id="footer-text">
-Last updated 2017-10-23 14:49:51 JST
-</div>
-</div>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js"></script>
-<script>prettyPrint()</script>
-</body>
-</html>
