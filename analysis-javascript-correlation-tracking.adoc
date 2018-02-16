@@ -1,0 +1,17 @@
+= JavaScript解析拡張 (Correlation Tracking)
+
+関連するプロパティ間の伝播を追跡するための手法として Correlation Tracking <<Sridharan>> が実装されている。
+
+この手法を利用するためには _CorrelatedPairExtractorFactory_ クラスと _PropertyNameContextSelector_ クラスを利用する。
+
+* _CorrelatedPairExtractorFactory_ クラス (package: com.ibm.wala.cast.js.ipa.callgraph.correlations.extraction)
+* _PropertyNameContextSelector_ クラス (package: com.ibm.wala.cast.js.ipa.callgraph)
+
+[source,java]
+----
+include::./src/java/correlation-tracking-test.java[]
+----
+
+== 参考文献
+
+- [[Sridharan]] Sridharan, Manu, et al. "Correlation tracking for points-to analysis of JavaScript." European Conference on Object-Oriented Programming. Springer, Berlin, Heidelberg, 2012.
