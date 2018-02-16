@@ -2,7 +2,10 @@
 
 WALAには、解析手法の１つであるField-based Analysis <<Feldthaus>> が実装されている。
 
-解析クラスとして、 _OptimisticCallgraphBuilder_ クラスと _PessimisticCallGraphBuilder_ クラスが存在する。
+解析クラスとして、 _OptimisticCallgraphBuilder_ クラスや _PessimisticCallGraphBuilder_ クラス、
+_WorklistBasedOptimisticCallGraphBuilder_ クラスが利用できる。
+
+(package: com.ibm.wala.cast.js.callgraph.fieldbase)
 
 
 [source,java]

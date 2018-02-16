@@ -27,6 +27,7 @@ Java/JavaScriptの静的解析ツール http://wala.sourceforge.net/wiki/index.p
 === JavaScript解析の拡張機能
 
 * link:./analysis-javascript-fieldbased.{filetype}[Field-based Analysis]
+* link:./analysis-javascript-correlation-tracking.{filetype}[Correlation Tracking]
 
 == 参考ページ・ドキュメント
 

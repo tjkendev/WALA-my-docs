@@ -282,6 +282,8 @@ body { -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; 
 
 h1, h2, h3, #toctitle, .sidebarblock > .content > .title, h4, h5, h6 { line-height: 1.4; }
 
+h2 { text-decoration: underline; }
+
 .clearfix:before, .clearfix:after, .float-group:before, .float-group:after { content: " "; display: table; }
 .clearfix:after, .float-group:after { clear: both; }
 
@@ -728,6 +730,9 @@ b.conum * { color: inherit !important; }
 <div class="sect2">
 <h3 id="_em_cgnode_em_クラス_callgraphのnode情報"><em>CGNode</em> クラス: CallGraphのnode情報</h3>
 <div class="paragraph">
+<p>(package: com.ibm.wala.ipa.callgraph)</p>
+</div>
+<div class="paragraph">
 <p><em>CallGraph</em> において、1つのメソッドは1つの <em>CGNode</em> として表現される</p>
 </div>
 <div class="paragraph">
@@ -750,6 +755,9 @@ for(CGNode node : callGraph) {
 <div class="sect2">
 <h3 id="_em_ir_em_クラス_メソッドの中間表現情報"><em>IR</em> クラス: メソッドの中間表現情報</h3>
 <div class="paragraph">
+<p>(package: com.ibm.wala.ssa)</p>
+</div>
+<div class="paragraph">
 <p>1つの <em>CGNode</em> には１つの <em>IR</em> が紐づいている</p>
 </div>
 <div class="paragraph">
@@ -767,6 +775,9 @@ SSACFG cfg = ir.getControlFlowGraph();         // 制御フローの情報</code
 <div class="sect2">
 <h3 id="_em_ssainstruction_em_クラス_中間表現の命令1単位の情報"><em>SSAInstruction</em> クラス: 中間表現の命令1単位の情報</h3>
 <div class="paragraph">
+<p>(package: com.ibm.wala.ssa)</p>
+</div>
+<div class="paragraph">
 <p>1つの中間表現命令は <em>SSAInstruction</em> 1つで表現される</p>
 </div>
 <div class="paragraph">
@@ -775,6 +786,9 @@ SSACFG cfg = ir.getControlFlowGraph();         // 制御フローの情報</code
 </div>
 <div class="sect2">
 <h3 id="_em_symboltable_em_クラス_変数や定数等の情報"><em>SymbolTable</em> クラス: 変数や定数等の情報</h3>
+<div class="paragraph">
+<p>(package: com.ibm.wala.ssa)</p>
+</div>
 <div class="paragraph">
 <p>中間表現における変数や定数等の情報は <em>SymbolTable</em> で表現される</p>
 </div>
@@ -795,6 +809,9 @@ for(SSAInstruction inst : ir.getInstructions() {
 </div>
 <div class="sect2">
 <h3 id="_em_issabasicblock_em_インタフェース_中間表現における基本ブロック1単位の情報"><em>ISSABasicBlock</em> インタフェース: 中間表現における基本ブロック1単位の情報</h3>
+<div class="paragraph">
+<p>(package: com.ibm.wala.ssa)</p>
+</div>
 <div class="paragraph">
 <p>メソッド内の中間表現命令は基本ブロック単位で分けられており、 <em>ISSABasicBlock</em> で表現される</p>
 </div>
@@ -821,6 +838,9 @@ foreachが簡単にできるWALAの補助メソッドである</p>
 </div>
 <div class="sect2">
 <h3 id="_em_ssacfg_em_クラス_制御フローの情報"><em>SSACFG</em> クラス: 制御フローの情報</h3>
+<div class="paragraph">
+<p>(package: com.iiiibm.wala.ssa)</p>
+</div>
 <div class="paragraph">
 <p>制御フロー情報は <em>SSACFG</em> で表現されている</p>
 </div>
@@ -1095,7 +1115,7 @@ for(CGNode targetNode : callGraph.getPossibleTargets(node, callSite)) {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-02-09 11:43:22 JST
+Last updated 2018-02-09 15:07:36 JST
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">

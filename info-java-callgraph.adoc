@@ -7,6 +7,7 @@
 == 基本的なクラス
 
 === _CGNode_ クラス: CallGraphのnode情報
+(package: com.ibm.wala.ipa.callgraph)
 
 _CallGraph_ において、1つのメソッドは1つの _CGNode_ として表現される
 
@@ -24,6 +25,7 @@ for(CGNode node : callGraph) {
 ----
 
 === _IR_ クラス: メソッドの中間表現情報
+(package: com.ibm.wala.ssa)
 
 1つの _CGNode_ には１つの _IR_ が紐づいている
 
@@ -38,12 +40,14 @@ SSACFG cfg = ir.getControlFlowGraph();         // 制御フローの情報
 ----
 
 === _SSAInstruction_ クラス: 中間表現の命令1単位の情報
+(package: com.ibm.wala.ssa)
 
 1つの中間表現命令は _SSAInstruction_ 1つで表現される
 
 命令には様々な種類があり、それぞれ _SSAInstruction_ の派生クラスで表現される
 
 === _SymbolTable_ クラス: 変数や定数等の情報
+(package: com.ibm.wala.ssa)
 
 中間表現における変数や定数等の情報は _SymbolTable_ で表現される
 
@@ -61,6 +65,7 @@ for(SSAInstruction inst : ir.getInstructions() {
 ----
 
 === _ISSABasicBlock_ インタフェース: 中間表現における基本ブロック1単位の情報
+(package: com.ibm.wala.ssa)
 
 メソッド内の中間表現命令は基本ブロック単位で分けられており、 _ISSABasicBlock_ で表現される
 
@@ -83,6 +88,7 @@ for(ISSABasicBlock bblock : Iterator2Iterable.make(ir.getBlocks())) {
 foreachが簡単にできるWALAの補助メソッドである
 
 === _SSACFG_ クラス: 制御フローの情報
+(package: com.iiiibm.wala.ssa)
 
 制御フロー情報は _SSACFG_ で表現されている
 

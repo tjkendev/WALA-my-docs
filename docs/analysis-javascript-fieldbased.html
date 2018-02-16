@@ -282,6 +282,8 @@ body { -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; 
 
 h1, h2, h3, #toctitle, .sidebarblock > .content > .title, h4, h5, h6 { line-height: 1.4; }
 
+h2 { text-decoration: underline; }
+
 .clearfix:before, .clearfix:after, .float-group:before, .float-group:after { content: " "; display: table; }
 .clearfix:after, .float-group:after { clear: both; }
 
@@ -721,7 +723,11 @@ b.conum * { color: inherit !important; }
 <p>WALAには、解析手法の１つであるField-based Analysis <a href="#Feldthaus">[Feldthaus]</a> が実装されている。</p>
 </div>
 <div class="paragraph">
-<p>解析クラスとして、 <em>OptimisticCallgraphBuilder</em> クラスと <em>PessimisticCallGraphBuilder</em> クラスが存在する。</p>
+<p>解析クラスとして、 <em>OptimisticCallgraphBuilder</em> クラスや <em>PessimisticCallGraphBuilder</em> クラス、
+<em>WorklistBasedOptimisticCallGraphBuilder</em> クラスが利用できる。</p>
+</div>
+<div class="paragraph">
+<p>(package: com.ibm.wala.cast.js.callgraph.fieldbase)</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -801,7 +807,7 @@ public class FieldBasedTest {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-02-09 14:23:41 JST
+Last updated 2018-02-09 15:26:55 JST
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
